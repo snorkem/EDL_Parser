@@ -1,0 +1,39 @@
+# EDL Parser - Requirements
+# Python 3.7+ required
+
+# Core Dependencies
+# ==================
+
+# EDL parsing (CMX3600 format)
+pycmx>=1.3.0
+
+# Data manipulation and Excel export
+pandas>=2.0.0
+openpyxl>=3.1.0
+
+# Timecode calculations
+timecode>=1.4.0
+
+# YAML configuration file parsing
+PyYAML>=6.0.0
+
+# SRT subtitle file parsing
+pysrt>=1.1.2
+
+
+# GUI Dependencies (Optional)
+# ============================
+# Required only if using the GUI (edl_gui.py)
+
+# Qt5 GUI framework
+PyQt5>=5.15.0
+
+
+# Development Dependencies (Optional)
+# ====================================
+# Uncomment if doing development work
+
+# pytest>=7.0.0          # Unit testing
+# black>=23.0.0          # Code formatting
+# flake8>=6.0.0          # Code linting
+# mypy>=1.0.0            # Type checking

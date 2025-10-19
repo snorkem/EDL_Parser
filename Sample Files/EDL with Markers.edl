@@ -1,0 +1,15 @@
+TITLE:   EDL with Markers 
+FCM: NON-DROP FRAME
+000001  B001_A001_0614H6                                                                                                                  V     C        20:33:47:12 20:34:13:19 00:02:00:00 00:02:26:07 
+*FROM CLIP NAME:  B001_A001_0614H6.01 
+*LOC: 00:02:23:18 RED     MARKER 4 
+*SOURCE FILE: B001_A001_0614H6
+000002  250614_0123_4CH.WAV                                                                                                               A     C        12:41:16:06 12:41:42:14 00:02:00:00 00:02:26:07 
+*FROM CLIP NAME:  250614_0123_4CH.WAV.SUB.01 
+*SOURCE FILE: 250614_0123_4CH.WAV
+000003  250614_0123_4CH.WAV                                                                                                               A2    C        12:41:16:06 12:41:42:14 00:02:00:00 00:02:26:07 
+*FROM CLIP NAME:  250614_0123_4CH.WAV.SUB.01 
+*SOURCE FILE: 250614_0123_4CH.WAV
+000004  250614_0123_4CH.WAV                                                                                                               A3    C        12:41:16:06 12:41:42:14 00:02:00:00 00:02:26:07 
+*FROM CLIP NAME:  250614_0123_4CH.WAV.SUB.01 
+*SOURCE FILE: 250614_0123_4CH.WAV

@@ -1,0 +1,135 @@
+# EDL Parser - Format Configuration
+# This file defines categorization rules and visual formatting for EDL events
+
+categories:
+  - name: A-Camera
+    description: Footage from A-Camera (main camera)
+    priority: 1
+    patterns:
+      - type: glob
+        field: Source File
+        pattern: "A*.*"
+      - type: glob
+        field: Clip Name
+        pattern: "A_*"
+      - type: regex
+        field: Source File
+        pattern: "^A[0-9]+.*"
+    formatting:
+      cell_color: "E6F3FF"  # Light blue
+      text_color: "000000"  # Black
+      bold: false
+      italic: false
+      entire_row: true
+
+  - name: B-Camera
+    description: Footage from B-Camera (secondary camera)
+    priority: 2
+    patterns:
+      - type: glob
+        field: Source File
+        pattern: "B*.*"
+      - type: glob
+        field: Clip Name
+        pattern: "B_*"
+      - type: regex
+        field: Source File
+        pattern: "^B[0-9]+.*"
+    formatting:
+      cell_color: "FFE6F0"  # Light pink
+      text_color: "000000"  # Black
+      bold: false
+      italic: false
+      entire_row: true
+
+  - name: Graphics
+    description: Graphics and titles
+    priority: 3
+    patterns:
+      - type: glob
+        field: Clip Name
+        pattern: "*GRAPHIC*"
+      - type: glob
+        field: Clip Name
+        pattern: "*TITLE*"
+      - type: regex
+        field: Source File
+        pattern: ".*\\.(png|psd|ai)$"
+    formatting:
+      cell_color: "FFF4E6"  # Light yellow
+      text_color: "000000"  # Black
+      bold: true
+      italic: false
+      entire_row: true
+
+  - name: Stock Footage
+    description: Stock footage or library content
+    priority: 4
+    patterns:
+      - type: glob
+        field: Source File
+        pattern: "*stock*"
+      - type: glob
+        field: Clip Name
+        pattern: "*STOCK*"
+      - type: regex
+        field: Source File
+        pattern: ".*(stock|library|archive).*"
+    formatting:
+      cell_color: "F0E6FF"  # Light purple
+      text_color: "000000"  # Black
+      bold: false
+      italic: true
+      entire_row: true
+
+  - name: Archival Footage
+    description: Archival video clip or linked audio
+    priority: 4
+    patterns:
+      - type: glob
+        field: Source File
+        pattern: "ERN_F*"
+      - type: regex
+        field: Source File
+        pattern: ".*(stock|library|archive).*"
+    formatting:
+      cell_color: "F0E6FF"  # Light purple
+      text_color: "000000"  # Black
+      bold: false
+      italic: true
+      entire_row: true
+
+  - name: Archival Stills
+    description: Stock footage or library content
+    priority: 4
+    patterns:
+      - type: regex
+        field: Source File
+        pattern: ".*(ERN_S).*"
+    formatting:
+      cell_color: "F0E6FF"  # Light purple
+      text_color: "000000"  # Black
+      bold: false
+      italic: true
+      entire_row: true
+
+  - name: Archival Audio
+    description: Audio-only clips
+    priority: 5
+    patterns:
+      - type: regex
+        field: Source File
+        pattern: ".*(ERN_A).*"
+    formatting:
+      cell_color: "E6FFE6"  # Light green
+      text_color: "006600"  # Dark green
+      bold: false
+      italic: false
+      entire_row: true
+
+# Default formatting for uncategorized events
+default_formatting:
+  cell_color: "FFFFFF"  # White
+  text_color: "000000"  # Black
+  bold: false
+  italic: false
