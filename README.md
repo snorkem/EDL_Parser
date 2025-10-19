@@ -90,12 +90,25 @@ Create a `format_config.yaml` file to define categorization rules:
 
 ```yaml
 categories:
-  - name: "INTERVIEW"
-    patterns: ["*interview*", "*INT_*"]
-    color: "FFFF00"  # Yellow
-  - name: "BROLL"
-    patterns: ["*broll*", "*BR_*"]
-    color: "00FF00"  # Green
+  - name: A-Cam
+    description: Footage from A-Camera (main camera)
+    priority: 1
+    patterns:
+      - type: glob
+        field: Source File
+        pattern: "A*.*"
+      - type: glob
+        field: Clip Name
+        pattern: "A_*"
+      - type: regex
+        field: Source File
+        pattern: "A\d{3}C\d{3}"
+    formatting:
+      cell_color: "E6F3FF"  # Light blue
+      text_color: "000000"  # Black
+      bold: false
+      italic: false
+      entire_row: true
 ```
 
 Then run:
