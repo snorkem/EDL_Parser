@@ -16,7 +16,7 @@
 
 ### Installation
 ```bash
-pip install pandas pycmx openpyxl python-timecode PyYAML pysrt
+pip install -r requirements.txt
 ```
 
 **Dependencies:**
