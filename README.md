@@ -90,6 +90,7 @@ Create a `format_config.yaml` file to define categorization rules:
 
 ```yaml
 categories:
+  - test change
   - name: A-Cam
     description: Footage from A-Camera (main camera)
     priority: 1
