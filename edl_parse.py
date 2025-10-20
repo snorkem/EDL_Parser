@@ -607,7 +607,7 @@ def create_statistics_sheet(stats, workbook_path):
         logger.warning(f"Failed to add statistics sheet: {str(e)}")
 
 
-def apply_excel_formatting(output_path, format_as_table=False, use_colored_rows=False, config=None, df=None):
+def apply_excel_formatting(output_path, format_as_table=False, use_colored_rows=False, config=None, df=None, grouped_df=None):
     """
     Apply formatting to the Excel file.
 
@@ -617,6 +617,7 @@ def apply_excel_formatting(output_path, format_as_table=False, use_colored_rows=
         use_colored_rows (bool): Apply alternating row colors
         config (dict): Optional configuration dictionary for category-based formatting
         df (pandas.DataFrame): Optional DataFrame to map categories to rows
+        grouped_df (pandas.DataFrame): Optional grouped events DataFrame for formatting
     """
     if not format_as_table and not use_colored_rows and not config:
         return  # No formatting requested
@@ -643,6 +644,15 @@ def apply_excel_formatting(output_path, format_as_table=False, use_colored_rows=
                     header_cell = ws.cell(row=1, column=col_idx)
                     if header_cell.value == 'Category':
                         category_col_idx = col_idx
+                        break
+
+            # Find the Unique Source Files column for Grouped Events sheet
+            source_files_col_idx = None
+            if sheet_name == 'Grouped Events' and config and grouped_df is not None:
+                for col_idx in range(1, max_col + 1):
+                    header_cell = ws.cell(row=1, column=col_idx)
+                    if header_cell.value == 'Unique Source Files':
+                        source_files_col_idx = col_idx
                         break
 
             # Auto-size columns if table format requested
@@ -712,6 +722,99 @@ def apply_excel_formatting(output_path, format_as_table=False, use_colored_rows=
                         # Highlight entire row in red
                         for col_idx in range(1, max_col + 1):
                             ws.cell(row=row_idx, column=col_idx).fill = duplicate_fill
+
+            # Apply rich text formatting to Grouped Events sheet
+            elif sheet_name == 'Grouped Events' and config and source_files_col_idx and grouped_df is not None:
+                logger.info("Applying category-based rich text formatting to Grouped Events sheet")
+                from openpyxl.cell.text import InlineFont
+                from openpyxl.cell.rich_text import TextBlock, CellRichText
+
+                # Build category to formatting map
+                category_format_map = {}
+                for category_config in config.get('categories', []):
+                    category_name = category_config['name']
+                    formatting = category_config.get('formatting', {})
+                    category_format_map[category_name] = formatting
+
+                # Apply formatting row by row
+                formatted_count = 0
+                for row_idx in range(2, max_row + 1):  # Start from row 2 (skip header)
+                    # Get the grouped event data for this row
+                    df_row_idx = row_idx - 2  # DataFrame is 0-indexed
+                    if df_row_idx >= len(grouped_df):
+                        continue
+
+                    grouped_event_row = grouped_df.iloc[df_row_idx]
+
+                    # Get source file categories metadata
+                    source_file_categories = grouped_event_row.get('_source_file_categories', {})
+                    if not source_file_categories:
+                        continue
+
+                    # Get the cell containing source files
+                    source_files_cell = ws.cell(row=row_idx, column=source_files_col_idx)
+                    source_files_text = str(source_files_cell.value) if source_files_cell.value else ''
+
+                    if not source_files_text or source_files_text == 'N/A':
+                        continue
+
+                    # Split source files by newline
+                    source_file_lines = [f.strip() for f in source_files_text.split('\n') if f.strip()]
+
+                    if len(source_file_lines) <= 1:
+                        continue  # Skip single-file cells
+
+                    # Build rich text with formatting for each line
+                    # KEY: Include newline IN the formatted TextBlock (solution from SOLUTION.md)
+                    rich_text_parts = []
+                    for i, source_file in enumerate(source_file_lines):
+                        # Find the category for this source file
+                        category = source_file_categories.get(source_file, '')
+
+                        # Use the first category for formatting (if multiple categories)
+                        if category and '; ' in category:
+                            primary_category = category.split('; ')[0]
+                        else:
+                            primary_category = category
+
+                        # Get formatting for this category
+                        formatting = category_format_map.get(primary_category, {}) if primary_category else {}
+
+                        # Create inline font with category formatting
+                        font_kwargs = {}
+                        if 'text_color' in formatting:
+                            font_kwargs['color'] = formatting['text_color']
+                        if formatting.get('bold', False):
+                            font_kwargs['b'] = True
+                        if formatting.get('italic', False):
+                            font_kwargs['i'] = True
+
+                        # Add newline to the text (except for last file) - SOLUTION FROM SOLUTION.MD
+                        if i < len(source_file_lines) - 1:
+                            text = source_file + '\n'
+                        else:
+                            text = source_file
+
+                        # Create TextBlock with formatting
+                        if font_kwargs:
+                            inline_font = InlineFont(**font_kwargs)
+                            text_block = TextBlock(inline_font, text)
+                        else:
+                            text_block = text
+
+                        rich_text_parts.append(text_block)
+
+                    # Set the cell value to rich text
+                    if rich_text_parts:
+                        try:
+                            source_files_cell.value = CellRichText(*rich_text_parts)
+                            formatted_count += 1
+                        except Exception as e:
+                            logger.warning(f"Could not apply rich text formatting to row {row_idx}: {str(e)}")
+                            # Keep original text as fallback
+                            pass
+
+                logger.info(f"Applied rich text formatting to {formatted_count} cells in Grouped Events sheet")
 
             # Apply category-based formatting if config provided
             elif config and category_col_idx and df is not None and 'Category' in df.columns:
@@ -996,8 +1099,18 @@ def create_grouped_event(events, fps, group_number=None, group_start=None, group
     clip_names = [str(e['Clip Name']) for e in events if e['Clip Name'] != 'N/A']
     unique_clips = len(set(clip_names))
 
-    # Collect all unique source files
-    source_files = [str(e['Source File']) for e in events if e['Source File'] != 'N/A']
+    # Collect all unique source files with their categories
+    source_files = []
+    source_file_categories = {}  # Map source file to its categories (for formatting)
+    for e in events:
+        if e['Source File'] != 'N/A':
+            source_file = str(e['Source File'])
+            source_files.append(source_file)
+            # Get category for this event if it exists
+            if 'Category' in e and e['Category']:
+                if source_file not in source_file_categories:
+                    source_file_categories[source_file] = e['Category']
+
     unique_source_files = sorted(set(source_files))  # Sort for consistent ordering
     source_files_str = '\n'.join(unique_source_files) if unique_source_files else 'N/A'
 
@@ -1053,7 +1166,8 @@ def create_grouped_event(events, fps, group_number=None, group_start=None, group
         'Timecode In': first_event['Timecode In'],
         'Timecode Out': last_event['Timecode Out'],
         'Duration': duration_str,
-        'Subtitles': subtitles_str
+        'Subtitles': subtitles_str,
+        '_source_file_categories': source_file_categories  # For formatting (not exported to Excel)
     }
 
     return grouped_event
@@ -1081,13 +1195,15 @@ def export_to_excel(df, output_path, format_as_table=False, use_colored_rows=Fal
 
             # Write grouped sheet if provided
             if grouped_df is not None and not grouped_df.empty:
-                grouped_df.to_excel(writer, sheet_name='Grouped Events', index=False)
+                # Exclude the _source_file_categories column from Excel export
+                export_cols = [col for col in grouped_df.columns if not col.startswith('_')]
+                grouped_df[export_cols].to_excel(writer, sheet_name='Grouped Events', index=False)
                 logger.info(f"Added 'Grouped Events' sheet with {len(grouped_df)} groups")
 
         logger.info(f"Successfully exported to {output_path}")
 
-        # Apply formatting if requested
-        apply_excel_formatting(output_path, format_as_table, use_colored_rows, config, df)
+        # Apply formatting if requested (pass grouped_df for category formatting)
+        apply_excel_formatting(output_path, format_as_table, use_colored_rows, config, df, grouped_df)
 
         logger.info(f"File size: {Path(output_path).stat().st_size} bytes")
     except (IOError, OSError, PermissionError) as e:
