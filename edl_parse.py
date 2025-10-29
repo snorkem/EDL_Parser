@@ -1448,7 +1448,7 @@ Note: Table formatting and colored rows are enabled by default.
 
         # EDL Comparison mode
         if args.compare:
-            from edl_advanced import compare_edls, create_changelog_report
+            from utils.edl_advanced import compare_edls, create_changelog_report
             logger.info(f"Comparing EDLs: {args.compare[0]} vs {args.compare[1]}")
             comparison = compare_edls(args.compare[0], args.compare[1])
             changelog_path = args.changelog_output if args.changelog_output else 'changelog.xlsx'
@@ -1461,7 +1461,7 @@ Note: Table formatting and colored rows are enabled by default.
 
         # EDL Merge mode
         if args.merge:
-            from edl_advanced import merge_edls
+            from utils.edl_advanced import merge_edls
             logger.info(f"Merging {len(args.merge)} EDL files (interleave mode)")
 
             # Pass subtitle parameters if provided
@@ -1512,12 +1512,12 @@ Note: Table formatting and colored rows are enabled by default.
 
         # Apply filtering if requested
         if args.filter:
-            from edl_advanced import filter_events
+            from utils.edl_advanced import filter_events
             df = filter_events(df, args.filter)
 
         # Apply search if requested
         if args.search:
-            from edl_advanced import search_events
+            from utils.edl_advanced import search_events
             df = search_events(df, args.search, args.search_field, args.search_regex)
 
         # Generate statistics if requested
@@ -1560,7 +1560,7 @@ Note: Table formatting and colored rows are enabled by default.
 
         # Split by category if requested
         if args.split_by_category:
-            from edl_advanced import split_by_category
+            from utils.edl_advanced import split_by_category
             if 'Category' not in df.columns:
                 logger.warning("Cannot split by category: no Category column found. Use --config to add categories.")
             else:

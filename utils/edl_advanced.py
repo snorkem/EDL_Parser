@@ -135,7 +135,7 @@ def merge_edls(edl_file_list, subtitle_file=None, subtitle_fps=None, subtitle_st
 
             if file_ext == '.stl':
                 # Parse STL file
-                from stl_parser import parse_stl_file, match_subtitles_to_events
+                from parsers.stl_parser import parse_stl_file, match_subtitles_to_events
 
                 logger.info(f"Parsing STL file: {subtitle_file}")
                 subtitles, effective_fps = parse_stl_file(subtitle_file, fps=subtitle_fps)
@@ -145,7 +145,7 @@ def merge_edls(edl_file_list, subtitle_file=None, subtitle_fps=None, subtitle_st
 
             elif file_ext == '.srt':
                 # Parse SRT file
-                from srt_parser import parse_srt_file, match_subtitles_to_events
+                from parsers.srt_parser import parse_srt_file, match_subtitles_to_events
 
                 # SRT uses user-specified FPS (default 30 if not specified)
                 effective_fps = subtitle_fps if subtitle_fps else 30
